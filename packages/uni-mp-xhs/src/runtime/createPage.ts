@@ -70,18 +70,7 @@ export function initCreatePage() {
         }
       },
       __l: handleLink,
-      __e: function (event: any) {
-        const {
-          currentTarget: { dataset },
-        } = event
-        dataset['eO'] = {
-          // eslint-disable-next-line no-restricted-syntax
-          ...dataset['eO'],
-          tap: dataset['eO']?.tap || dataset['eO']?.click,
-        }
-        // @ts-ignore
-        return handleEvent.call(this, event)
-      },
+      __e: handleEvent,
     }
     if (isPlainObject(vueOptions.events)) {
       extend(pageOptions.events!, vueOptions.events)

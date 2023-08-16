@@ -29,18 +29,18 @@ export function parse(componentOptions: MPComponentOptions) {
     string,
     (...args: any[]) => any
   >
-  methods.__e = function (event: any) {
-    const {
-      currentTarget: { dataset },
-    } = event
-    dataset['eO'] = {
-      // eslint-disable-next-line no-restricted-syntax
-      ...dataset['eO'],
-      tap: dataset['eO']?.tap || dataset['eO']?.click,
-    }
-    // @ts-ignore
-    return handleEvent.call(this, event)
-  }
-
+  // methods.__e = function (event: any) {
+  //   const {
+  //     currentTarget: { dataset },
+  //   } = event
+  //   dataset['eO'] = {
+  //     // eslint-disable-next-line no-restricted-syntax
+  //     ...dataset['eO'],
+  //     tap: dataset['eO']?.tap || dataset['eO']?.click,
+  //   }
+  //   // @ts-ignore
+  //   return handleEvent.call(this, event)
+  // }
+  methods.__e = handleEvent
   methods.__l = handleLink
 }

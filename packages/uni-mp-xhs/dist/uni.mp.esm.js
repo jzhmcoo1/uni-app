@@ -883,13 +883,7 @@ function initCreatePage() {
                 }
             },
             __l: handleLink,
-            __e: function (event) {
-                var _a, _b;
-                const { currentTarget: { dataset }, } = event;
-                dataset['eO'] = Object.assign(Object.assign({}, dataset['eO']), { tap: ((_a = dataset['eO']) === null || _a === void 0 ? void 0 : _a.tap) || ((_b = dataset['eO']) === null || _b === void 0 ? void 0 : _b.click) });
-                // @ts-ignore
-                return handleEvent.call(this, event);
-            },
+            __e: handleEvent,
         };
         if (isPlainObject(vueOptions.events)) {
             extend(pageOptions.events, vueOptions.events);
@@ -918,13 +912,19 @@ function initRelation(mpInstance, detail) {
 }
 function parse(componentOptions) {
     const methods = componentOptions.methods;
-    methods.__e = function (event) {
-        var _a, _b;
-        const { currentTarget: { dataset }, } = event;
-        dataset['eO'] = Object.assign(Object.assign({}, dataset['eO']), { tap: ((_a = dataset['eO']) === null || _a === void 0 ? void 0 : _a.tap) || ((_b = dataset['eO']) === null || _b === void 0 ? void 0 : _b.click) });
-        // @ts-ignore
-        return handleEvent.call(this, event);
-    };
+    // methods.__e = function (event: any) {
+    //   const {
+    //     currentTarget: { dataset },
+    //   } = event
+    //   dataset['eO'] = {
+    //     // eslint-disable-next-line no-restricted-syntax
+    //     ...dataset['eO'],
+    //     tap: dataset['eO']?.tap || dataset['eO']?.click,
+    //   }
+    //   // @ts-ignore
+    //   return handleEvent.call(this, event)
+    // }
+    methods.__e = handleEvent;
     methods.__l = handleLink;
 }
 
