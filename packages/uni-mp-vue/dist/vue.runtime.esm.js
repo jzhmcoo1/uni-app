@@ -5671,12 +5671,19 @@ function vOn(value, key) {
     const instance = getCurrentInstance();
     const ctx = instance.ctx;
     // 微信小程序，QQ小程序，当 setData diff 的时候，若事件不主动同步过去，会导致事件绑定不更新，（question/137217）
-    const extraKey = typeof key !== 'undefined' &&
-        (ctx.$mpPlatform === 'mp-weixin' || ctx.$mpPlatform === 'mp-qq') &&
-        (isString(key) || typeof key === 'number')
-        ? '_' + key
-        : '';
-    const name = 'e' + instance.$ei++ + extraKey;
+    // const extraKey = typeof key !== 'undefined' &&
+    //     (ctx.$mpPlatform === 'mp-weixin' || ctx.$mpPlatform === 'mp-qq') &&
+    //     (isString(key) || typeof key === 'number')
+    //     ? '_' + key
+    //     : '';
+    // const name = 'e' + instance.$ei++ + extraKey;
+    let extraKey = typeof key !== "undefined" && (ctx.$mpPlatform === "mp-weixin" || ctx.$mpPlatform === "mp-qq") && (isString(key) || typeof key === "number") ? "_" + key : "";
+    const needExtraKey = ctx.$mpPlatform === 'mp-xhs' && ctx.$mpType === "component";
+    const eiCounter = instance.$ei++
+    if (needExtraKey) {
+        extraKey = "_" + ctx.componentId + "_" + eiCounter;
+    }
+    const name = "e" + eiCounter + extraKey;
     const mpInstance = ctx.$scope;
     if (!value) {
         // remove

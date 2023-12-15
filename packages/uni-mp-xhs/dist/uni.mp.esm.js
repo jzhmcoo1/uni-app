@@ -1,5 +1,5 @@
 import { SLOT_DEFAULT_NAME, EventChannel, invokeArrayFns, MINI_PROGRAM_PAGE_RUNTIME_HOOKS, ON_LOAD, ON_SHOW, ON_HIDE, ON_UNLOAD, ON_RESIZE, ON_TAB_ITEM_TAP, ON_REACH_BOTTOM, ON_PULL_DOWN_REFRESH, ON_ADD_TO_FAVORITES, isUniLifecycleHook, ON_READY, ON_LAUNCH, ON_ERROR, ON_THEME_CHANGE, ON_PAGE_NOT_FOUND, ON_UNHANDLE_REJECTION, customizeEvent, addLeadingSlash, stringifyQuery } from '@dcloudio/uni-shared';
-import { isArray, isFunction, hasOwn, extend, hyphenate, isPlainObject, isObject } from '@vue/shared';
+import { isArray, hasOwn, isFunction, extend, hyphenate, isPlainObject, isObject } from '@vue/shared';
 import { ref, nextTick, findComponentPropsData, toRaw, updateProps, hasQueueJob, invalidateJob, devtoolsComponentAdded, getExposeProxy, pruneComponentPropsCache } from 'vue';
 import { normalizeLocale, LOCALE_EN } from '@dcloudio/uni-i18n';
 
@@ -551,7 +551,11 @@ function updateComponentProps(up, instance) {
             invalidateJob(instance.update);
         }
         {
-            instance.update();
+            // 字节跳动小程序 https://github.com/dcloudio/uni-app/issues/3340
+            // 百度小程序 https://github.com/dcloudio/uni-app/issues/3612
+            if (!hasQueueJob(instance.update)) {
+                instance.update();
+            }
         }
     }
 }
@@ -830,22 +834,6 @@ function initSpecialMethods(mpInstance) {
         });
     }
 }
-function createVueComponent(mpType, mpInstance, vueOptions, parent) {
-    return $createComponent({
-        type: vueOptions,
-        props: findPropsData(mpInstance.props, mpType === 'page'),
-    }, {
-        mpType,
-        mpInstance,
-        slots: mpInstance.props.uS || {},
-        parentComponent: parent && parent.$,
-        onBeforeSetup(instance, options) {
-            initRefs(instance, mpInstance);
-            initMocks(instance, mpInstance, mocks$1);
-            initComponentInstance(instance, options);
-        },
-    });
-}
 
 function initCreatePage() {
     return function createPage(vueOptions) {
@@ -858,14 +846,28 @@ function initCreatePage() {
                 };
                 // 初始化 vue 实例
                 this.props = query;
+                const mpInstance = this;
+                // this.$vm = createVueComponent('page', this, vueOptions)
+                this.$vm = $createComponent({
+                    type: vueOptions,
+                    props: findPropsData(this.props, true),
+                }, {
+                    mpType: 'page',
+                    mpInstance: this,
+                    slots: this.props.uS || {},
+                    onBeforeSetup(instance, options) {
+                        initRefs(instance, mpInstance);
+                        initMocks(instance, mpInstance, mocks$1);
+                        initComponentInstance(instance, options);
+                    },
+                });
+                this.$vm.$callHook(ON_LOAD, this.options);
             },
             onShow() {
                 if (__VUE_PROD_DEVTOOLS__) {
                     devtoolsComponentAdded(this.$vm.$);
                 }
-                this.$vm = createVueComponent('page', this, vueOptions);
                 this.$vm.$callHook('mounted');
-                this.$vm.$callHook(ON_LOAD, this.options);
                 initSpecialMethods(this);
                 if (this.$vm) {
                     this.$vm.$callHook(ON_SHOW);
@@ -874,7 +876,7 @@ function initCreatePage() {
             onReady() {
                 setTimeout(() => {
                     this.$vm.$callHook(ON_READY);
-                }, 50);
+                }, 100);
             },
             onUnload() {
                 if (this.$vm) {

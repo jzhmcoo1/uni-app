@@ -1,4 +1,5 @@
 import {
+  ComponentInternalInstance,
   ComponentOptions,
   // @ts-ignore
   devtoolsComponentAdded,
@@ -13,6 +14,12 @@ import {
   initWxsCallMethods,
   initRuntimeHooks,
   handleEvent,
+  $createComponent,
+  findPropsData,
+  CreateComponentOptions,
+  initRefs,
+  initMocks,
+  initComponentInstance,
 } from '@dcloudio/uni-mp-core'
 
 import {
@@ -24,7 +31,7 @@ import {
   stringifyQuery,
 } from '@dcloudio/uni-shared'
 
-import { handleLink, initSpecialMethods, createVueComponent } from './util'
+import { handleLink, initSpecialMethods, mocks } from './util'
 
 import { extend, isPlainObject } from '@vue/shared'
 
@@ -41,14 +48,34 @@ export function initCreatePage() {
         }
         // 初始化 vue 实例
         this.props = query
+        const mpInstance = this
+        // this.$vm = createVueComponent('page', this, vueOptions)
+        this.$vm = $createComponent(
+          {
+            type: vueOptions,
+            props: findPropsData(this.props, true),
+          },
+          {
+            mpType: 'page',
+            mpInstance: this,
+            slots: this.props.uS || {}, // vueSlots
+            onBeforeSetup(
+              instance: ComponentInternalInstance,
+              options: CreateComponentOptions
+            ) {
+              initRefs(instance, mpInstance as any)
+              initMocks(instance, mpInstance as any, mocks)
+              initComponentInstance(instance, options)
+            },
+          }
+        )
+        this.$vm.$callHook(ON_LOAD, this.options)
       },
       onShow() {
         if (__VUE_PROD_DEVTOOLS__) {
           devtoolsComponentAdded(this.$vm.$)
         }
-        this.$vm = createVueComponent('page', this, vueOptions)
         this.$vm.$callHook('mounted')
-        this.$vm.$callHook(ON_LOAD, this.options)
         initSpecialMethods(this)
         if (this.$vm) {
           this.$vm.$callHook(ON_SHOW)
@@ -57,7 +84,7 @@ export function initCreatePage() {
       onReady() {
         setTimeout(() => {
           this.$vm.$callHook(ON_READY)
-        }, 50)
+        }, 100)
       },
       onUnload() {
         if (this.$vm) {
