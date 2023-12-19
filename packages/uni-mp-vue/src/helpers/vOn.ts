@@ -44,9 +44,11 @@ export function vOn(value: EventValue | undefined, key?: number | string) {
       : ''
 
   const needExtraKey =
+    // @ts-ignore
     ctx.$mpPlatform === 'mp-xhs' && ctx.$mpType === 'component'
   const eiCounter = instance.$ei++
   if (needExtraKey) {
+    // @ts-ignore
     extraKey = '_' + ctx.componentId + '_' + eiCounter
   }
   const name = 'e' + eiCounter + extraKey
