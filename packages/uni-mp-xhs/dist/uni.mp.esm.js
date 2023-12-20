@@ -847,7 +847,6 @@ function initCreatePage() {
                 // 初始化 vue 实例
                 this.props = query;
                 const mpInstance = this;
-                // this.$vm = createVueComponent('page', this, vueOptions)
                 this.$vm = $createComponent({
                     type: vueOptions,
                     props: findPropsData(this.props, true),
@@ -861,20 +860,18 @@ function initCreatePage() {
                         initComponentInstance(instance, options);
                     },
                 });
-                this.$vm.$callHook(ON_LOAD, this.options);
+                initSpecialMethods(this);
+                this.$vm.$callHook(ON_LOAD, query);
             },
             onShow() {
                 if (__VUE_PROD_DEVTOOLS__) {
                     devtoolsComponentAdded(this.$vm.$);
                 }
-                this.$vm.$callHook('mounted');
-                initSpecialMethods(this);
-                if (this.$vm) {
-                    this.$vm.$callHook(ON_SHOW);
-                }
+                this.$vm.$callHook(ON_SHOW);
             },
             onReady() {
                 setTimeout(() => {
+                    this.$vm.$callHook('mounted');
                     this.$vm.$callHook(ON_READY);
                 }, 100);
             },
