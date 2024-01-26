@@ -311,6 +311,7 @@ export declare const MINI_PROGRAM_PAGE_RUNTIME_HOOKS: {
     readonly onPageScroll: 1;
     readonly onShareAppMessage: number;
     readonly onShareTimeline: number;
+    readonly onShareChat: number;
 };
 
 export declare const NAVBAR_HEIGHT = 44;
@@ -497,6 +498,8 @@ export declare const ON_RESIZE = "onResize";
 export declare const ON_SAVE_EXIT_STATE = "onSaveExitState";
 
 export declare const ON_SHARE_APP_MESSAGE = "onShareAppMessage";
+
+export declare const ON_SHARE_CHAT = "onShareChat";
 
 export declare const ON_SHARE_TIMELINE = "onShareTimeline";
 
@@ -765,7 +768,7 @@ export declare class UniInputElement extends UniElement {
     set value(val: string | number);
 }
 
-export declare const UniLifecycleHooks: readonly ["onShow", "onHide", "onLaunch", "onError", "onThemeChange", "onPageNotFound", "onUnhandledRejection", "onInit", "onLoad", "onReady", "onUnload", "onResize", "onBackPress", "onPageScroll", "onTabItemTap", "onReachBottom", "onPullDownRefresh", "onShareTimeline", "onAddToFavorites", "onShareAppMessage", "onSaveExitState", "onNavigationBarButtonTap", "onNavigationBarSearchInputClicked", "onNavigationBarSearchInputChanged", "onNavigationBarSearchInputConfirmed", "onNavigationBarSearchInputFocusChanged"];
+export declare const UniLifecycleHooks: readonly ["onShow", "onHide", "onLaunch", "onError", "onThemeChange", "onPageNotFound", "onUnhandledRejection", "onInit", "onLoad", "onReady", "onUnload", "onResize", "onBackPress", "onPageScroll", "onTabItemTap", "onReachBottom", "onPullDownRefresh", "onShareTimeline", "onAddToFavorites", "onShareAppMessage", "onShareChat", "onSaveExitState", "onNavigationBarButtonTap", "onNavigationBarSearchInputClicked", "onNavigationBarSearchInputChanged", "onNavigationBarSearchInputConfirmed", "onNavigationBarSearchInputFocusChanged"];
 
 export declare class UniNode extends UniEventTarget {
     nodeId?: number;

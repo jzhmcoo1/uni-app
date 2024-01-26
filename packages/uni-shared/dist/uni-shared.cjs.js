@@ -269,6 +269,8 @@ const ON_UNLOAD = 'onUnload';
 const ON_INIT = 'onInit';
 // 微信特有
 const ON_SAVE_EXIT_STATE = 'onSaveExitState';
+// 小红书特有
+const ON_SHARE_CHAT = 'onShareChat';
 const ON_RESIZE = 'onResize';
 const ON_BACK_PRESS = 'onBackPress';
 const ON_PAGE_SCROLL = 'onPageScroll';
@@ -1290,6 +1292,7 @@ const PAGE_HOOKS = [
     ON_PULL_DOWN_REFRESH,
     ON_SHARE_TIMELINE,
     ON_SHARE_APP_MESSAGE,
+    ON_SHARE_CHAT,
     ON_ADD_TO_FAVORITES,
     ON_SAVE_EXIT_STATE,
     ON_NAVIGATION_BAR_BUTTON_TAP,
@@ -1326,6 +1329,7 @@ const UniLifecycleHooks = [
     ON_SHARE_TIMELINE,
     ON_ADD_TO_FAVORITES,
     ON_SHARE_APP_MESSAGE,
+    ON_SHARE_CHAT,
     ON_SAVE_EXIT_STATE,
     ON_NAVIGATION_BAR_BUTTON_TAP,
     ON_NAVIGATION_BAR_SEARCH_INPUT_CLICKED,
@@ -1338,6 +1342,7 @@ const MINI_PROGRAM_PAGE_RUNTIME_HOOKS = /*#__PURE__*/ (() => {
         onPageScroll: 1,
         onShareAppMessage: 1 << 1,
         onShareTimeline: 1 << 2,
+        onShareChat: 1 << 3,
     };
 })();
 function isUniLifecycleHook(name, value, checkType = true) {
@@ -1553,6 +1558,7 @@ exports.ON_READY = ON_READY;
 exports.ON_RESIZE = ON_RESIZE;
 exports.ON_SAVE_EXIT_STATE = ON_SAVE_EXIT_STATE;
 exports.ON_SHARE_APP_MESSAGE = ON_SHARE_APP_MESSAGE;
+exports.ON_SHARE_CHAT = ON_SHARE_CHAT;
 exports.ON_SHARE_TIMELINE = ON_SHARE_TIMELINE;
 exports.ON_SHOW = ON_SHOW;
 exports.ON_TAB_ITEM_TAP = ON_TAB_ITEM_TAP;

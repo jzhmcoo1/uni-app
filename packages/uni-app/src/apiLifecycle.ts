@@ -26,6 +26,7 @@ import {
   ON_SAVE_EXIT_STATE,
   ON_SHARE_APP_MESSAGE,
   ON_SHARE_TIMELINE,
+  ON_SHARE_CHAT,
   ON_SHOW,
   ON_TAB_ITEM_TAP,
   ON_THEME_CHANGE,
@@ -119,6 +120,10 @@ export const onAddToFavorites =
 export const onShareAppMessage =
   /*#__PURE__*/ createHook<Required<Page.PageInstance>['onShareAppMessage']>(
     ON_SHARE_APP_MESSAGE
+  )
+export const onShareChat =
+  /*#__PURE__*/ createHook<Required<Page.PageInstance>['onShareChat']>(
+    ON_SHARE_CHAT
   )
 
 export const onNavigationBarButtonTap = /*#__PURE__*/ createHook<

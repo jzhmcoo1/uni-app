@@ -76,6 +76,8 @@ declare type onSaveExitStateHook = () => SaveExitState;
 
 export declare const onShareAppMessage: (hook: (options: Page.ShareAppMessageOption) => Page.CustomShareContent | Promise<Omit<Page.CustomShareContent, "promise">>, target?: ComponentInternalInstance | null) => void;
 
+export declare const onShareChat: (hook: any, target?: ComponentInternalInstance | null) => void;
+
 export declare const onShareTimeline: (hook: () => Page.ShareTimelineContent, target?: ComponentInternalInstance | null) => void;
 
 export declare const onShow: (hook: ((options?: App.LaunchShowOption | undefined) => void) | (() => void), target?: ComponentInternalInstance | null) => void;
