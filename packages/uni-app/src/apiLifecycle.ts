@@ -121,8 +121,13 @@ export const onShareAppMessage =
   /*#__PURE__*/ createHook<Required<Page.PageInstance>['onShareAppMessage']>(
     ON_SHARE_APP_MESSAGE
   )
+
+interface XhsPageInstance extends Page.PageInstance {
+  onShareChat: (options: any) => void
+}
+
 export const onShareChat =
-  /*#__PURE__*/ createHook<Required<Page.PageInstance>['onShareChat']>(
+  /*#__PURE__*/ createHook<Required<XhsPageInstance>['onShareChat']>(
     ON_SHARE_CHAT
   )
 

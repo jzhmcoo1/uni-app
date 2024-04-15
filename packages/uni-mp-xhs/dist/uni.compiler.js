@@ -10,7 +10,7 @@ function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
 var initMiniProgramPlugin__default = /*#__PURE__*/_interopDefault(initMiniProgramPlugin);
 var path__default = /*#__PURE__*/_interopDefault(path);
 
-var description = "项目配置文件。";
+var description$1 = "项目配置文件。";
 var packOptions = {
 	ignore: [
 	]
@@ -50,7 +50,7 @@ var condition = {
 	}
 };
 var source = {
-	description: description,
+	description: description$1,
 	packOptions: packOptions,
 	setting: setting,
 	compileType: compileType,
@@ -64,6 +64,59 @@ const transformOn = uniCliShared.createTransformOn(uniMpCompiler.transformOn);
 
 const transformModel = uniCliShared.createTransformModel(uniMpCompiler.transformModel);
 
+var name = "@dcloudio/uni-mp-xhs";
+var version = "3.0.0-alpha-3090120230923001";
+var description = "uniapp mp-xhs";
+var main = "dist/index.js";
+var files = [
+	"dist",
+	"lib"
+];
+var repository = {
+	type: "git",
+	url: "git+https://github.com/dcloudio/uni-app.git",
+	directory: "packages/uni-mp-xhs"
+};
+var scripts = {
+	test: "echo \"Error: no test specified\" && exit 1"
+};
+var license = "Apache-2.0";
+var gitHead = "33e807d66e1fe47e2ee08ad9c59247e37b8884da";
+var devDependencies = {
+	"@dcloudio/uni-mp-weixin": "3.0.0-alpha-3090120230923001",
+	"@dcloudio/uni-mp-alipay": "3.0.0-alpha-3090120230923001",
+	"@vue/compiler-core": "3.2.47"
+};
+var dependencies = {
+	"@dcloudio/uni-cli-shared": "3.0.0-alpha-3090120230923001",
+	"@dcloudio/uni-mp-compiler": "3.0.0-alpha-3090120230923001",
+	"@dcloudio/uni-mp-vite": "3.0.0-alpha-3090120230923001",
+	"@dcloudio/uni-mp-vue": "3.0.0-alpha-3090120230923001",
+	"@dcloudio/uni-shared": "3.0.0-alpha-3090120230923001",
+	"@vue/shared": "3.2.47"
+};
+var packageJson = {
+	name: name,
+	version: version,
+	description: description,
+	main: main,
+	files: files,
+	repository: repository,
+	scripts: scripts,
+	license: license,
+	"uni-app": {
+	name: "mp-xhs",
+	title: "小红书小程序",
+	apply: [
+		"mp-xhs"
+	],
+	main: "dist/uni.compiler.js"
+},
+	gitHead: gitHead,
+	devDependencies: devDependencies,
+	dependencies: dependencies
+};
+
 const directiveTransforms = {
     on: transformOn,
     model: transformModel,
@@ -73,6 +126,13 @@ const compilerOptions = {
     directiveTransforms,
 };
 const COMPONENTS_DIR = 'xhscomponents';
+const uniappInfoSource = Object.assign(source, {
+    framework: {
+        tool: 'Uniapp',
+        name: packageJson.name,
+        version: packageJson.version
+    }
+});
 const miniProgram = {
     class: {
         array: false,
@@ -150,7 +210,7 @@ const options = {
     project: {
         filename: projectConfigFilename,
         config: ['project.config.json'],
-        source,
+        source: uniappInfoSource,
     },
     template: Object.assign(Object.assign({}, miniProgram), { filter: {
             extname: '.sjs',

@@ -12,6 +12,8 @@ import source from './project.config.json'
 import { transformOn } from './transforms/vOn'
 import { transformModel } from './transforms/vModel'
 
+import packageJson from '@dcloudio/uni-mp-xhs/package.json'
+
 const directiveTransforms = {
   on: transformOn,
   model: transformModel,
@@ -23,6 +25,14 @@ export const compilerOptions: CompilerOptions = {
 }
 
 const COMPONENTS_DIR = 'xhscomponents'
+
+const uniappInfoSource = Object.assign(source, {
+  framework: {
+    tool: 'Uniapp',
+    name: packageJson.name,
+    version: packageJson.version,
+  },
+})
 
 export const miniProgram: MiniProgramCompilerOptions = {
   class: {
@@ -102,7 +112,7 @@ export const options: UniMiniProgramPluginOptions = {
   project: {
     filename: projectConfigFilename,
     config: ['project.config.json'],
-    source,
+    source: uniappInfoSource,
   },
   template: {
     /* eslint-disable no-restricted-syntax */
