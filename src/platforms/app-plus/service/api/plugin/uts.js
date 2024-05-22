@@ -1,9 +1,18 @@
 import { isPlainObject, hasOwn, extend, capitalize, isString } from 'uni-shared';
 
+// 生成的 uts.js 需要同步到 vue2 src/platforms/app-plus/service/api/plugin
 let callbackId = 1;
 let proxy;
 const callbacks = {};
+function isComponentPublicInstance(instance) {
+    return instance && instance.$ && instance.$.proxy === instance;
+}
+function toRaw(observed) {
+    const raw = observed && observed.__v_raw;
+    return raw ? toRaw(raw) : observed;
+}
 function normalizeArg(arg) {
+    arg = toRaw(arg);
     if (typeof arg === 'function') {
         // 查找该函数是否已缓存
         const oldId = Object.keys(callbacks).find((id) => callbacks[id] === arg);
@@ -12,9 +21,23 @@ function normalizeArg(arg) {
         return id;
     }
     else if (isPlainObject(arg)) {
-        Object.keys(arg).forEach((name) => {
-            arg[name] = normalizeArg(arg[name]);
-        });
+        if (isComponentPublicInstance(arg)) {
+            let nodeId = '';
+            let pageId = '';
+            // @ts-expect-error
+            const el = arg.$el;
+            // 非 x 可能不存在 getNodeId 方法？
+            if (el && el.getNodeId) {
+                pageId = el.pageId;
+                nodeId = el.getNodeId();
+            }
+            return { pageId, nodeId };
+        }
+        else {
+            Object.keys(arg).forEach((name) => {
+                arg[name] = normalizeArg(arg[name]);
+            });
+        }
     }
     return arg;
 }
@@ -23,7 +46,9 @@ function initUTSInstanceMethod(async, opts, instanceId, proxy) {
 }
 function getProxy() {
     if (!proxy) {
-        proxy = uni.requireNativePlugin('UTS-Proxy');
+        {
+            proxy = uni.requireNativePlugin('UTS-Proxy');
+        }
     }
     return proxy;
 }
@@ -144,7 +169,7 @@ function initProxyFunction(async, { moduleName, moduleType, package: pkg, class:
 }
 function initUTSStaticMethod(async, opts) {
     if (opts.main && !opts.method) {
-        if (typeof plus !== 'undefined' && plus.os.name === 'iOS') {
+        if (isUTSiOS()) {
             opts.method = 's_' + opts.name;
         }
     }
@@ -152,7 +177,7 @@ function initUTSStaticMethod(async, opts) {
 }
 const initUTSProxyFunction = initUTSStaticMethod;
 function parseClassMethodName(name, methods) {
-    if (hasOwn(methods, name + 'ByJs')) {
+    if (typeof name === 'string' && hasOwn(methods, name + 'ByJs')) {
         return name + 'ByJs';
     }
     return name;
@@ -187,13 +212,14 @@ function initUTSProxyClass(options) {
         staticProps = options.staticProps;
     }
     // iOS 需要为 ByJs 的 class 构造函数（如果包含JSONObject或UTSCallback类型）补充最后一个参数
-    if (typeof plus !== 'undefined' && plus.os.name === 'iOS') {
+    if (isUTSiOS()) {
         if (constructorParams.find((p) => p.type === 'UTSCallback' || p.type.indexOf('JSONObject') > 0)) {
             constructorParams.push({ name: '_byJs', type: 'boolean' });
         }
     }
     const ProxyClass = class UTSClass {
         constructor(...params) {
+            this.__instanceId = 0;
             if (errMsg) {
                 throw new Error(errMsg);
             }
@@ -201,13 +227,21 @@ function initUTSProxyClass(options) {
             // 初始化实例 ID
             if (!isProxyInterface) {
                 // 初始化未指定时，每次都要创建instanceId
-                instanceId = initProxyFunction(false, extend({ name: 'constructor', params: constructorParams }, baseOptions), 0).apply(null, params);
+                this.__instanceId = initProxyFunction(false, extend({ name: 'constructor', params: constructorParams }, baseOptions), 0).apply(null, params);
             }
-            if (!instanceId) {
+            else if (typeof instanceId === 'number') {
+                this.__instanceId = instanceId;
+            }
+            if (!this.__instanceId) {
                 throw new Error(`new ${cls} is failed`);
             }
-            const proxy = new Proxy(this, {
+            const instance = this;
+            const proxy = new Proxy(instance, {
                 get(_, name) {
+                    // 重要：禁止响应式
+                    if (name === '__v_skip') {
+                        return true;
+                    }
                     if (!target[name]) {
                         //实例方法
                         name = parseClassMethodName(name, methods);
@@ -217,14 +251,14 @@ function initUTSProxyClass(options) {
                                 name,
                                 params,
                                 return: returnOptions,
-                            }, baseOptions), instanceId, proxy);
+                            }, baseOptions), instance.__instanceId, proxy);
                         }
                         else if (props.includes(name)) {
                             // 实例属性
                             return invokePropGetter({
                                 moduleName,
                                 moduleType,
-                                id: instanceId,
+                                id: instance.__instanceId,
                                 name: name,
                                 errMsg,
                             });
@@ -256,32 +290,29 @@ function initUTSProxyClass(options) {
         },
     });
 }
+function isUTSAndroid() {
+    return typeof plus !== 'undefined' && plus.os.name === 'Android';
+}
+function isUTSiOS() {
+    return !isUTSAndroid();
+}
 function initUTSPackageName(name, is_uni_modules) {
-    if (typeof plus !== 'undefined' && plus.os.name === 'Android') {
+    if (isUTSAndroid()) {
         return 'uts.sdk.' + (is_uni_modules ? 'modules.' : '') + name;
     }
     return '';
 }
 function initUTSIndexClassName(moduleName, is_uni_modules) {
-    if (typeof plus === 'undefined') {
-        return '';
-    }
-    return initUTSClassName(moduleName, plus.os.name === 'iOS' ? 'IndexSwift' : 'IndexKt', is_uni_modules);
+    return initUTSClassName(moduleName, isUTSAndroid() ? 'IndexKt' : 'IndexSwift', is_uni_modules);
 }
 function initUTSClassName(moduleName, className, is_uni_modules) {
-    if (typeof plus === 'undefined') {
-        return '';
-    }
-    if (plus.os.name === 'Android') {
+    if (isUTSAndroid()) {
         return className;
     }
-    if (plus.os.name === 'iOS') {
-        return ('UTSSDK' +
-            (is_uni_modules ? 'Modules' : '') +
-            capitalize(moduleName) +
-            capitalize(className));
-    }
-    return '';
+    return ('UTSSDK' +
+        (is_uni_modules ? 'Modules' : '') +
+        capitalize(moduleName) +
+        capitalize(className));
 }
 const interfaceDefines = {};
 function registerUTSInterface(name, define) {

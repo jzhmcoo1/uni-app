@@ -31,17 +31,17 @@ module.exports = function chainWebpack (platformOptions, vueOptions, api) {
         }
         if (newOptions.fallback && newOptions.fallback.options) {
           const generator = {}
-          const oldOptions = newOptions.fallback.options
-          const keys = ['publicPath', 'outputPath']
-          keys.forEach(key => {
-            generator[key] = pathData => {
-              const outputPath = oldOptions[key](null, pathData.module.request)
-              const basename = path.basename(outputPath)
-              return outputPath.substring(0, outputPath.length - basename.length)
-            }
-          })
+          const options = newOptions.fallback.options
+          // const keys = ['publicPath', 'outputPath']
+          // keys.forEach(key => {
+          //   generator[key] = pathData => {
+          //     const outputPath = oldOptions[key](null, pathData.module.request)
+          //     const basename = path.basename(outputPath)
+          //     return outputPath.substring(0, outputPath.length - basename.length)
+          //   }
+          // })
           generator.filename = pathData => {
-            return path.basename(pathData.module.request)
+            return options.name(pathData.module.request)
           }
           webpackConfig.module.rule(staticType).set('generator', generator)
         }
@@ -99,6 +99,20 @@ module.exports = function chainWebpack (platformOptions, vueOptions, api) {
               .use('extract-css-loader')
               .tap(options => {
                 options.esModule = false
+                // 参考 https://github.com/vuejs/vue-cli/commit/b41ed76c5ce54c618587f24b9d14c35cf31a96d4
+                // 修复 部分平台 css 内的资源路径不正确，如uni-icons在百度小程序上引用的字体文件路径
+                options.publicPath = '/'
+                return options
+              })
+          }
+        } else {
+          if (langRule.oneOf(type).uses.has('extract-css-loader')) {
+            langRule.oneOf(type)
+              .use('extract-css-loader')
+              .tap(options => {
+                // 参考 https://github.com/vuejs/vue-cli/commit/b41ed76c5ce54c618587f24b9d14c35cf31a96d4
+                // 修复 部分平台 css 内的资源路径不正确，如uni-icons在百度小程序上引用的字体文件路径
+                if (options) options.publicPath = '/'
                 return options
               })
           }

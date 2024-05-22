@@ -210,6 +210,10 @@ function traverseDataNode (dataNode, state, node) {
         break
       case 'class':
       case 'staticClass':
+        // vue@2.7.0 https://github.com/vuejs/vue/pull/12195 已经修复这个问题(question/184192)，后续升级vue版本后可以删除
+        if (property.key.name === 'staticClass' && property.value.value) {
+          property.value.value = property.value.value.replace(/\s+/g, ' ').trim()
+        }
         ret.class = genCode(property.value)
         break
       case 'style':
@@ -233,7 +237,7 @@ function traverseDataNode (dataNode, state, node) {
                   // 自定义组件不支持 hidden 属性
                   const platform = state.options.platform.name
                   const platforms = ['mp-weixin', 'mp-qq', 'mp-jd', 'mp-xhs', 'mp-toutiao', 'mp-lark']
-                  if (isComponent(node.type) && platforms.includes(platform)) {
+                  if (platforms.includes(platform) && isComponent(node.type, platform)) {
                     // 字节跳动|飞书小程序自定义属性不会反应在DOM上，只能使用事件格式
                     key = `${platform === 'mp-toutiao' || platform === 'mp-lark' ? 'bind:-' : ''}${ATTR_DATA_CUSTOM_HIDDEN}`
                   } else {

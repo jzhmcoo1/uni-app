@@ -349,6 +349,29 @@ try {
   }
 } catch (e) {}
 
+let tsLoader
+try {
+  tsLoader = require.resolve('ts-loader', {
+    paths: [require.resolve('@vue/cli-plugin-babel')]
+  })
+} catch (error) {}
+
+tsLoader && rules.push({
+  test: /\.ts$/,
+  use: [{
+    loader: require.resolve('babel-loader', {
+      paths: [require.resolve('@vue/cli-plugin-babel')]
+    })
+  }, {
+    loader: tsLoader,
+    options: Object.assign({
+      transpileOnly: false,
+      appendTsSuffixTo: ['\\.nvue$', '\\.vue$'],
+      happyPackMode: false
+    }, require('@dcloudio/vue-cli-plugin-uni/lib/util').getTsLoadOptions())
+  }, jsPreprocessorLoader]
+})
+
 module.exports = function () {
   return {
     target: 'node', // 激活 vue-loader 的 isServer 逻辑
@@ -379,10 +402,11 @@ module.exports = function () {
     }),
     output: {
       path: process.env.UNI_OUTPUT_DIR,
-      filename: '[name].js'
+      filename: '[name].js',
+      publicPath: '/'
     },
     resolve: {
-      extensions: ['.js', '.nvue', '.vue', '.json'],
+      extensions: ['.ts', '.js', '.nvue', '.vue', '.json'],
       alias: {
         '@/pages.json': path.resolve(process.env.UNI_INPUT_DIR, 'pages.json') + '?' + JSON.stringify({
           type: 'origin-pages-json'

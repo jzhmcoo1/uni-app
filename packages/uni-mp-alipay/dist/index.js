@@ -687,8 +687,6 @@ class EventChannel {
 
 const eventChannels = {};
 
-const eventChannelStack = [];
-
 let id = 0;
 
 function initEventChannel (events, cache = true) {
@@ -696,31 +694,30 @@ function initEventChannel (events, cache = true) {
   const eventChannel = new EventChannel(id, events);
   if (cache) {
     eventChannels[id] = eventChannel;
-    eventChannelStack.push(eventChannel);
   }
   return eventChannel
 }
 
 function getEventChannel (id) {
-  if (id) {
-    const eventChannel = eventChannels[id];
-    delete eventChannels[id];
-    return eventChannel
-  }
-  return eventChannelStack.shift()
+  const eventChannel = eventChannels[id];
+  delete eventChannels[id];
+  return eventChannel
 }
 
-var navigateTo = {
-  args (fromArgs, toArgs) {
-    const id = initEventChannel(fromArgs.events).id;
-    if (fromArgs.url) {
-      fromArgs.url = fromArgs.url + (fromArgs.url.indexOf('?') === -1 ? '?' : '&') + '__id__=' + id;
+function navigateTo () {
+  let eventChannel;
+  return {
+    args (fromArgs, toArgs) {
+      eventChannel = initEventChannel(fromArgs.events);
+      if (fromArgs.url) {
+        fromArgs.url = fromArgs.url + (fromArgs.url.indexOf('?') === -1 ? '?' : '&') + '__id__=' + eventChannel.id;
+      }
+    },
+    returnValue (fromRes, toRes) {
+      fromRes.eventChannel = eventChannel;
     }
-  },
-  returnValue (fromRes, toRes) {
-    fromRes.eventChannel = getEventChannel();
   }
-};
+}
 
 function findExistsPageIndex (url) {
   const pages = getCurrentPages();
@@ -1010,7 +1007,7 @@ function _handleNetworkInfo (result) {
 }
 
 const protocols = { // 需要做转换的 API 列表
-  navigateTo,
+  navigateTo: navigateTo(),
   redirectTo,
   returnValue (methodName, res = {}) { // 通用 returnValue 解析
     if (res.error || res.errorMessage) {
@@ -2878,6 +2875,9 @@ const hooks = [
 
 function initEventChannel$1 () {
   Vue.prototype.getOpenerEventChannel = function () {
+    {
+      if (my.canIUse('getOpenerEventChannel')) { return this.$scope.getOpenerEventChannel() }
+    }
     if (!this.__eventChannel__) {
       this.__eventChannel__ = new EventChannel();
     }
@@ -2996,7 +2996,10 @@ function parseBaseApp (vm, {
 
       delete this.$options.mpType;
       delete this.$options.mpInstance;
-      if (this.mpType === 'page' && typeof getApp === 'function') { // hack vue-i18n
+      if (
+        ( this.mpType === 'page') &&
+        typeof getApp === 'function'
+      ) { // hack vue-i18n
         const app = getApp();
         if (app.$vm && app.$vm.$i18n) {
           this._i18n = app.$vm.$i18n;
@@ -3283,7 +3286,8 @@ function initVm (VueComponent) {
       mpInstance: this
     });
 
-    if (options.parent) { // 父组件已经初始化，直接初始化子，否则放到父组件的 didMount 中处理
+    if (options.parent) {
+      // 父组件已经初始化，直接初始化子，否则放到父组件的 didMount 中处理
       // 初始化 vue 实例
       this.$vm = new VueComponent(options);
       handleRef.call(options.parent.$scope, this);
@@ -3320,7 +3324,8 @@ function parseComponent (vueComponentOptions, needVueOptions) {
     data: initData(vueOptions, Vue.prototype),
     props,
     didMount () {
-      if (my.dd) { // 钉钉小程序底层基础库有 bug,组件嵌套使用时,在 didMount 中无法及时调用 props 中的方法
+      if (my.dd) {
+        // 钉钉小程序底层基础库有 bug,组件嵌套使用时,在 didMount 中无法及时调用 props 中的方法
         setTimeout(() => {
           initVm.call(this, VueComponent);
         }, 4);
@@ -3347,6 +3352,10 @@ function parseComponent (vueComponentOptions, needVueOptions) {
       triggerEvent
     }
   };
+
+  if (vueOptions.options) {
+    componentOptions.options = vueOptions.options;
+  }
 
   if (isComponent2) {
     componentOptions.onInit = function onInit () {
@@ -3483,7 +3492,7 @@ if (typeof Proxy !== 'undefined' && "mp-alipay" !== 'app-plus') {
       uni[name] = promisify(name, todoApis[name]);
     });
     Object.keys(extraApi).forEach(name => {
-      uni[name] = promisify(name, todoApis[name]);
+      uni[name] = promisify(name, extraApi[name]);
     });
   }
 
